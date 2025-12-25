@@ -1,9 +1,11 @@
+//Upload Your Study Area
 var geometry: Table users/shahrukhsumon/Study_area_NW
+//Load Precipitation Data
 var imageCollection: ImageCollection "CHIRPS Daily: Climate Hazards Center InfraRed Precipitation With Station Data (Version 2.0 Final)"
 
-//Current Year
-var start_current_year = "2002-03-01"; // where n denote"s the specific year of your study
-var end_current_year = "2002-05-31";  
+//Filter image by specific time
+var start_current_year = "2002-03-01";
+var end_current_year = "2002-05-31";
 var filter_current_year = imageCollection.filterDate(start_current_year,end_current_year)
                   .filterBounds(geometry)
                   .map(function(image){return image.clip(geometry)})
@@ -42,7 +44,7 @@ var cal1 = precipitation_current.subtract(min_precipitation_historical);
 var cal2 = max_precipitation_historical.subtract(min_precipitation_historical);
 var PCI = cal1.divide(cal2).clip(geometry);
 
-//Display
+//Visulalization
 Map.centerObject(geometry,8)
 var vis = {
   palette: ['001137', '0aab1e', 'e7eb05', 'ff4a2d', 'e90000'],
@@ -57,4 +59,5 @@ image: PCI,
 description: 'PCI_2002',
 scale: 5566,
 region:geometry.geometry(),
+
 maxPixels:1e11});
