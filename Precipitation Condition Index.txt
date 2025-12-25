@@ -1,0 +1,60 @@
+var geometry: Table users/shahrukhsumon/Study_area_NW
+var imageCollection: ImageCollection "CHIRPS Daily: Climate Hazards Center InfraRed Precipitation With Station Data (Version 2.0 Final)"
+
+//Current Year
+var start_current_year = "2002-03-01"; // where n denote"s the specific year of your study
+var end_current_year = "2002-05-31";  
+var filter_current_year = imageCollection.filterDate(start_current_year,end_current_year)
+                  .filterBounds(geometry)
+                  .map(function(image){return image.clip(geometry)})
+var precipitation_current = filter_current_year.select('precipitation').mean();
+
+Map.centerObject(geometry,8)
+var vis = {
+  palette: ['001137', '0aab1e', 'e7eb05', 'ff4a2d', 'e90000'],
+};
+
+print(precipitation_current)
+Map.addLayer(precipitation_current,vis,"precipitation_current")
+
+//Historical Year
+var start_historical_year = "2002-03-01" 
+var end_historical_year = "2022-05-31"
+var filter_historical_year = imageCollection.filterDate(start_historical_year,end_historical_year)
+                  .filterBounds(geometry)
+                  .filter(ee.Filter.calendarRange(3,5,'month'))
+                  .map(function(image){return image.clip(geometry)})
+var precipitation_historical = filter_historical_year.select('precipitation');
+
+Map.centerObject(geometry,8)
+var vis = {
+  palette: ['001137', '0aab1e', 'e7eb05', 'ff4a2d', 'e90000'],
+};
+
+print(precipitation_historical)
+Map.addLayer(precipitation_historical,vis,"precipitation_historical")
+
+var min_precipitation_historical = precipitation_historical.min();
+var max_precipitation_historical = precipitation_historical.max();
+
+//PCI Calculation
+var cal1 = precipitation_current.subtract(min_precipitation_historical);
+var cal2 = max_precipitation_historical.subtract(min_precipitation_historical);
+var PCI = cal1.divide(cal2).clip(geometry);
+
+//Display
+Map.centerObject(geometry,8)
+var vis = {
+  palette: ['001137', '0aab1e', 'e7eb05', 'ff4a2d', 'e90000'],
+};
+
+print(PCI)
+Map.addLayer(PCI,vis,"PCI")
+
+//Export
+Export.image.toDrive({
+image: PCI,
+description: 'PCI_2002',
+scale: 5566,
+region:geometry.geometry(),
+maxPixels:1e11});
